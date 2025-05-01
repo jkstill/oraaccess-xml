@@ -4,8 +4,10 @@ USERNAME=scott
 PASSWORD=tiger
 DATABASE='orcl'
 
-# create the table if it does not exist
+# sometimes a good idea to avoid login.sql
+unset SQLPATH ORACLE_PATH
 
+# create the table if it does not exist
 sqlplus -L -s $USERNAME/$PASSWORD@$DATABASE <<-EOF
 
 -- create some PL/SQL code to create a table if it does not exist
@@ -96,11 +98,22 @@ sqlplus -L -s $USERNAME/$PASSWORD@$DATABASE <<-EOF > /dev/null
 
 	alter session set tracefile_identifier = '&identifier';
 
-	@10046
+	-- enable sqltrace
+	exec dbms_monitor.session_trace_enable(waits => true, binds => false);
+
+	-- alternatively, you can set the trace level using the event
+	--alter session set events '10046 trace name context forever, level 12';
+
 	select id, name from arraytest;
-	@10046_off
+
+	-- disable sqltrace
+	exec dbms_monitor.session_trace_disable;
+
+	-- alternatively, you can disable sqltrace using the event
+	--alter session set events '10046 trace name context off'
+	
 	-- comment out the following line if you cannot automatically retrieve the trace file
-	@gettracefile
+	@@gettracefile
 	exit
 
 EOF

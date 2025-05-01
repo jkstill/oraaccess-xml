@@ -99,6 +99,7 @@ sqlplus -L -s $USERNAME/$PASSWORD@$DATABASE <<-EOF > /dev/null
 	@10046
 	select id, name from arraytest;
 	@10046_off
+	-- comment out the following line if you cannot automatically retrieve the trace file
 	@gettracefile
 	exit
 

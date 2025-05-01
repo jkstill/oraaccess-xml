@@ -91,7 +91,18 @@ This is also where `oraaccess.xml` is located.
 
 This location can be changed by setting the `TNS_ADMIN` environment variable to point to a different directory.
 
-That is how this testing will work. 
+Here is how the testing will proceed:
+
+- create and popoulate a test table
+  - the script will create a table with 100k rows, only if it does not already exist
+  - sqlplus will be run with sqltrace enabled
+  - the trace file will be fetched and analyzed with mrskew
+
+- Use TNS_ADMIN to point to the directory where oraaccess.xml is located
+  - NONE: default location. In this case there is no oraaccess.xml file at OH/network/admin
+  - 100/oraaccess.xml: 100 row fetch size
+  - 500/oraaccess.xml: 500 row fetch size
+  - 1000/oraaccess.xml: 1000 row fetch size
 
 
 

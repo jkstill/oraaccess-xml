@@ -105,16 +105,145 @@ Here is how the testing will proceed:
   - 1000/oraaccess.xml: 1000 row fetch size
 
 
+Here is a sample run of the script:
+
+```text
+$  ./compare-oraaccess-xml.sh
+Creating Table arraytest
+
+PL/SQL procedure successfully completed.
+
+Creating rows in arraytest
+
+PL/SQL procedure successfully completed.
+
+TNS_ADMIN:
+TNS_ADMIN: /home/jkstill/oracle/oraaccess-xml/100
+TNS_ADMIN: /home/jkstill/oracle/oraaccess-xml/500
+TNS_ADMIN: /home/jkstill/oracle/oraaccess-xml/1000
+$
+```
+
+Here are the contents of the `trace/` directory:
+
+```text
+$  ls -latr trace/*.trc
+-rw-r----- 1 jkstill jkstill 2358427 May  1 11:11 trace/orcl1901_ora_1358976_ARRAY-NONE.trc
+-rw-r----- 1 jkstill jkstill  343126 May  1 11:11 trace/orcl1901_ora_1359072_ARRAY-100.trc
+-rw-r----- 1 jkstill jkstill   74920 May  1 11:11 trace/orcl1901_ora_1359116_ARRAY-500.trc
+-rw-r----- 1 jkstill jkstill   53364 May  1 11:11 trace/orcl1901_ora_1359158_ARRAY-1000.trc
+```
+
+Just comparing the sizes of the trace files gives us a good idea of the performance of the different fetch sizes.
+
+## Analyze the trace files with mrskew
+
+The rc file `fetch-snmfc.rc` is used to analyze the trace files. This rc file will restrict the output to FETCH, EXEC calls that had the FETCH included, and SQL*Net messages to and from the client.
+
+In each case the FETCH and EXEC calls are grouped by name and the number of rows returned per call.
+
+The SQL*Net messages are grouped by name only.
 
 
+### Default Fetch Size
+
+The baseline is to not use any oraaccess.xml file. This is the default fetch size of 15 rows for sqlplus.
+
+We see that 6,666 FETCH calls were made that each returned 15 rows. 
+
+The total number of rows returned was 100,000.
+
+Of particular interest is the time spent waiting on the network.
+
+This is not because the network was slow (average wait time was 0.000397 seconds), but because the application made far too many calls to the database.
 
 
+```text
+$  mrskew --rc fetch-snmfc.rc trace/orcl1901_ora_1358976_ARRAY-NONE.trc
+                          CALL:NNNNNNNNN  DURATION       %   CALLS      MEAN       MIN       MAX
+----------------------------------------  --------  ------  ------  --------  --------  --------
+   SQL*Net message from client:           2.646101   99.9%   6,671  0.000397  0.000187  0.001386
+                         FETCH:000000015  0.001155    0.0%   6,666  0.000000  0.000000  0.000016
+     SQL*Net message to client:           0.000361    0.0%   6,671  0.000000  0.000000  0.000002
+                         FETCH:000000001  0.000018    0.0%       1  0.000018  0.000018  0.000018
+                          EXEC:000000000  0.000010    0.0%       1  0.000010  0.000010  0.000010
+                         FETCH:000000009  0.000000    0.0%       1  0.000000  0.000000  0.000000
+----------------------------------------  --------  ------  ------  --------  --------  --------
+TOTAL (6)                                 2.647645  100.0%  20,011  0.000132  0.000000  0.001386
+```
 
+### 100 Row Fetch Size
 
+With 100 rows, the total amount of time spent waiting on the network is reduced from 2.646 seconds to 1.671 seconds.
 
+```text
+$ mrskew --rc fetch-snmfc.rc trace/orcl1901_ora_1359072_ARRAY-100.trc
+                          CALL:NNNNNNNNN  DURATION       %  CALLS      MEAN       MIN       MAX
+----------------------------------------  --------  ------  -----  --------  --------  --------
+   SQL*Net message from client:           1.662761   99.5%    956  0.001739  0.000231  0.002668
+                         FETCH:000000105  0.008220    0.5%    951  0.000009  0.000000  0.000035
+     SQL*Net message to client:           0.000051    0.0%    956  0.000000  0.000000  0.000001
+                         FETCH:000000100  0.000023    0.0%      1  0.000023  0.000023  0.000023
+                          EXEC:000000000  0.000009    0.0%      1  0.000009  0.000009  0.000009
+                         FETCH:000000045  0.000007    0.0%      1  0.000007  0.000007  0.000007
+----------------------------------------  --------  ------  -----  --------  --------  --------
+TOTAL (6)                                 1.671071  100.0%  2,866  0.000583  0.000000  0.002668
+```
 
+### 500 Row Fetch Size
 
+With a fetch size of 500 rows, the total amount of time spent waiting on the network is reduced from 1.671 seconds to 1.530 seconds.
 
+This is not nearly as large a gain as was seen when comparing the default fetch size of 15 rows to 100 rows.
 
+When large amounts of data must be moved however, the difference could still be significant.
+
+```text
+$ mrskew --rc fetch-snmfc.rc trace/orcl1901_ora_1359116_ARRAY-500.trc
+                          CALL:NNNNNNNNN  DURATION       %  CALLS      MEAN       MIN       MAX
+----------------------------------------  --------  ------  -----  --------  --------  --------
+   SQL*Net message from client:           1.524779   99.6%    200  0.007624  0.000221  0.008691
+                         FETCH:000000510  0.006030    0.4%    195  0.000031  0.000000  0.000054
+                         FETCH:000000500  0.000045    0.0%      1  0.000045  0.000045  0.000045
+     SQL*Net message to client:           0.000035    0.0%    200  0.000000  0.000000  0.000001
+                         FETCH:000000050  0.000011    0.0%      1  0.000011  0.000011  0.000011
+                          EXEC:000000000  0.000010    0.0%      1  0.000010  0.000010  0.000010
+----------------------------------------  --------  ------  -----  --------  --------  --------
+TOTAL (6)                                 1.530910  100.0%    598  0.002560  0.000000  0.008691
+```
+
+### 1000 Row Fetch Size
+
+The final test was to set the fetch size to 1000 rows.
+
+Again, the time spent waiting on the network is reduced from 1.530 seconds to 1.492 seconds.
+
+A difference of 0.038 seconds may not be important most of the time.
+
+This test is for a relatively small amount of data (100k rows).
+
+If this test were for 500 million rows, the difference would be 190 seconds.
+
+This may be important for large volumes of data.
+
+```text
+$ mrskew --rc fetch-snmfc.rc trace/orcl1901_ora_1359158_ARRAY-1000.trc
+                          CALL:NNNNNNNNN  DURATION       %  CALLS      MEAN       MIN       MAX
+----------------------------------------  --------  ------  -----  --------  --------  --------
+   SQL*Net message from client:           1.485908   99.6%    103  0.014426  0.000205  0.015652
+                         FETCH:000001005  0.006022    0.4%     98  0.000061  0.000000  0.000138
+                         FETCH:000001000  0.000083    0.0%      1  0.000083  0.000083  0.000083
+                         FETCH:000000510  0.000035    0.0%      1  0.000035  0.000035  0.000035
+     SQL*Net message to client:           0.000017    0.0%    103  0.000000  0.000000  0.000002
+                          EXEC:000000000  0.000011    0.0%      1  0.000011  0.000011  0.000011
+----------------------------------------  --------  ------  -----  --------  --------  --------
+TOTAL (6)                                 1.492076  100.0%    307  0.004860  0.000000  0.015652
+```
+
+## Conclusion
+
+The oraaccess.xml file is a powerful tool that can be used to control the fetch size of Oracle client applications.
+
+It is simple to use and can have a significant impact on performance, especially when dealing with large result sets.
 
 

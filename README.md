@@ -54,7 +54,7 @@ For our purposes, the oraaccess.xml file will be used only to set the default fe
 
 It is fairly straightforward to set the fetch size in oraaccess.xml as per the following example:
 
-````xml
+```xml
 <?xml version="1.0" encoding="ASCII" ?> 
  <oraaccess xmlns="http://xmlns.oracle.com/oci/oraaccess"
   xmlns:oci="http://xmlns.oracle.com/oci/oraaccess"

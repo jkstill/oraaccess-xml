@@ -40,7 +40,7 @@ The Java Thin Client does not use the Oracle libraries for connections, and ther
 There are other methods that may be used to control the fetch size of applications that do not use Oracle libraries for connections, 
 but we will not cover them here.
 
-A well known Oracle application that can make use of oraaccess.xml is Sql*Plus.
+A well known Oracle application that can make use of oraaccess.xml is SQL*Plus.
 
 ## What is oraaccess.xml?
 

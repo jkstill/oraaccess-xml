@@ -250,4 +250,3 @@ The oraaccess.xml file is a powerful tool that can be used to control the fetch 
 
 It is simple to use and can have a significant impact on performance, especially when dealing with large result sets.
 
-

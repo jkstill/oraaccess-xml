@@ -76,11 +76,15 @@ That's all there is to it.
 
 You are likely familiar with sqlplus, as it is a standard oracle tool.
 
-The mrskew tool is a tool that can be used to test the performance of sqlplus with different fetch sizes.
+Method R mrskew is a tool that can be used to test the performance of sqlplus with different fetch sizes.
 
-(Here I need to introduce mrskew, but Method R is ceasing operations, and the softwar is moving.  I have asked how I should now refer to it)
+The entire suite of Method R tools are my goto choice for analyzing Oracle SQL Trace files. 
 
-All code used here is available at [oraaccess-xml](https://github.com/jkstill/oraaccess-xml), and so will not be included in the article.
+They can be found at [Method R Workbench](https://carymillsap.com/software/workbench/)
+
+BTW, these tools are free, and are available for Windows, Linux, and MacOS.
+
+All code used in this article is available at [oraaccess-xml](https://github.com/jkstill/oraaccess-xml), and so will not be included in the article.
 
 Any `rc` files used with mrskew are available here: [jkstill mrtools rc files](https://github.com/jkstill/mrtools)
 

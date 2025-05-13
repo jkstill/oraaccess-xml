@@ -76,9 +76,9 @@ That's all there is to it.
 
 You are likely familiar with sqlplus, as it is a standard oracle tool.
 
-Method R mrskew is a tool that can be used to test the performance of sqlplus with different fetch sizes.
+Method R mrskew is a tool that can be used to test the database performance while running sqlplus (or any oracle database application) with different fetch sizes.
 
-The entire suite of Method R tools are my goto choice for analyzing Oracle SQL Trace files. 
+The entire suite of Method R tools are my go-to choice for analyzing Oracle SQL Trace files. 
 
 They can be found at [Method R Workbench](https://carymillsap.com/software/workbench/)
 
@@ -97,7 +97,7 @@ This location can be changed by setting the `TNS_ADMIN` environment variable to 
 
 Here is how the testing will proceed:
 
-- create and popoulate a test table
+- create and populate a test table
   - the script will create a table with 100k rows, only if it does not already exist
   - sqlplus will be run with sqltrace enabled
   - the trace file will be fetched and analyzed with mrskew
